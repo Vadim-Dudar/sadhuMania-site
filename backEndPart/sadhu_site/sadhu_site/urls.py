@@ -19,8 +19,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from products.views import ProductDetailView
+
 urlpatterns = [
     path('', include('content.urls')),
+    path('product/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
     path('admin/', admin.site.urls),
 ]
 

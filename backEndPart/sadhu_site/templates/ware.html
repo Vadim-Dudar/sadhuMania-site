@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
 
@@ -6,24 +8,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>sadhu page</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/bs-theme-overrides.css">
+    <link rel="stylesheet" href="{% static 'css/bs-theme-overrides.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
-    <link rel="stylesheet" href="assets/css/Hero-Carousel-images.css">
-    <link rel="stylesheet" href="assets/css/Lightbox-Gallery-No-Gutters-baguetteBox.min.css">
-    <link rel="stylesheet" href="assets/css/Navbar-Centered-Links-icons.css">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="{% static 'css/Hero-Carousel-images.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Lightbox-Gallery-No-Gutters-baguetteBox.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Navbar-Centered-Links-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
     <!-- Start: Navbar Right Links -->
     <nav class="navbar navbar-expand-md bg-body py-3" id="main" style="width: 100%;margin-bottom: 20px;">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><img width="100" height="" src="assets/img/logo.jpg" style="--logo-size: clamp(55px, 15%, 70px);width: var(--logo-size);/*height: var(--logo-size);*/position: absolute;"></span><span style="font-size: 1.2rem;font-weight: 750;margin-left: 1rem;letter-spacing: .15rem;">SADHU MANIA</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><img width="100" height="" src="{% static '/img/logo.jpg' %}" style="--logo-size: clamp(55px, 15%, 70px);width: var(--logo-size);/*height: var(--logo-size);*/position: absolute;"></span><span style="font-size: 1.2rem;font-weight: 750;margin-left: 1rem;letter-spacing: .15rem;">SADHU MANIA</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html#main">Головна</a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#catalog">Каталог</a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#about-sadhu">Що таке садху?</a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#about-us">Про нас</a></li>
+                    <li class="nav-item"><a class="nav-link" href="\#main">Головна</a></li>
+                    <li class="nav-item"><a class="nav-link" href="\#catalog">Каталог</a></li>
+                    <li class="nav-item"><a class="nav-link" href="\#about-sadhu">Що таке садху?</a></li>
+                    <li class="nav-item"><a class="nav-link" href="\#about-us">Про нас</a></li>
                 </ul>
             </div>
         </div>
@@ -32,11 +34,9 @@
         <div class="col">
             <div class="carousel slide" data-bs-ride="false" id="carousel-1">
                 <div class="carousel-inner">
-                    <div class="carousel-item active"><img class="w-100 d-block" src="assets/img/sahhu%20foto/1880a9ed-5ae9-4ea3-98a5-6162a7a887a6.jpg" alt="Slide Image"></div>
-                    <div class="carousel-item"><img class="w-100 d-block" src="assets/img/sahhu%20foto/7c8ffdab-20f4-437a-8d22-a900e7ec96ff.jpg" alt="Slide Image"></div>
-                    <div class="carousel-item"><img class="w-100 d-block" src="assets/img/sahhu%20foto/f96cde84-5bd1-4728-8725-4277ac71105f.jpg" alt="Slide Image"></div>
-                    <div class="carousel-item"><img class="w-100 d-block" src="assets/img/sahhu%20foto/ffe6cca8-b6b2-456d-8a9c-635f5996d20.jpg" alt="Slide Image"></div>
-                    <div class="carousel-item"><img class="w-100 d-block" src="assets/img/sahhu%20foto/ffe6cca8-b6b2-456d-8a9c-635f5996d200.jpg" alt="Slide Image"></div>
+                    {% for image in product.images.all %}
+                    	<div class="carousel-item {% if forloop.first %}active{% endif %}"><img class="w-100 d-block" src="{{ image.image.url }}" alt="Slide Image"></div>
+                    {% endfor %}
                 </div>
                 <div>
                     <!-- Start: Previous --><a class="carousel-control-prev" href="#carousel-1" role="button" data-bs-slide="prev" style="opacity: 1;"><span class="carousel-control-prev-icon" style="background-color: #32005F;border-radius: 5px;"></span><span class="visually-hidden">Previous</span></a><!-- End: Previous -->
@@ -46,7 +46,7 @@
             </div>
         </div>
         <div class="col">
-            <h1 class="mb-4"><strong>Дошка з дуба "Сота"</strong></h1>
+            <h1 class="mb-4"><strong>{{ product.name }}</strong></h1>
             <div>
                 <ul class="nav nav-tabs" role="tablist" style="margin-bottom: 8px;">
                     <li class="nav-item" role="presentation"><a class="nav-link" role="tab" data-bs-toggle="tab" href="#tab-1">Опис</a></li>
@@ -55,13 +55,18 @@
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane" role="tabpanel" id="tab-1">
-                        <p>Нічого зайвого, але все і одразу. Сакральний звук «Аум»(Ом) що обʼєднує в собі все що є: минуле, майбутнє та теперішнє; тіло, душу та дух. З нього почався цей світ, він його основа та енергія. Дошка Садху «Аум» виконана з якісної дубової деревини, має свій неповторний малюнок, що формувався довгі роки під час росту дерева. Дошка Садху «Аум» покрита органічним маслом з домішками бджолиного воску щоб зберегти природне тепло, текстуру та енергетику дубу. Ця дошка створена для того, щоб заохотити вас повертатися до практики цвяхостояння щодня.&nbsp;Ви можете не турбуватися про якість або рівність цвяхів. Наші цвяхивиготовленні виключно для цвяхостояння. Вони безпечні, гладенькі та усі однакової довжини. Ми їм дали імʼя : «770 помічників» для вашої ідеальної практики цвяхостояння.</p>
+                        <p>{{ product.description }}</p>
                     </div>
                     <div class="tab-pane" role="tabpanel" id="tab-2">
-                        <p>Матеріали: 100% натуральна дубова деревина.<br>Розмір дошки Садху підходить до 45 розміру ноги. <br>Ширина: 14см<br>Довжина: 32см<br>Вага: 1,7кг</p>
+                        <p>Матеріали: {{ product.materials }}.
+                            <br>Розмір дошки Садху підходить до {{ product.size_of_foot }} розміру ноги.
+                            <br>Ширина: {{ product.length }}
+                            <br>Довжина: {{ product.width }}
+                            <br>Вага: {{ product.weight }}
+                        </p>
                     </div>
                     <div class="tab-pane active" role="tabpanel" id="tab-3">
-                        <p>Комплектація: 2 дошки Садху, чохол.<br><br>Також можемо зробити індивідуальне гравіювання по вашому бажанню, зробивши вашу дошку Садху унікальною та з особистим сенсом. НАМАСТЕ! )<br><br></p>
+                        <p>Комплектація: {{ product.equipment }}.<br><br>Також можемо зробити індивідуальне гравіювання по вашому бажанню, зробивши вашу дошку Садху унікальною та з особистим сенсом. НАМАСТЕ! )<br><br></p>
                         <div class="pb-2 pb-lg-1" style="text-align: center;">
                             <h6 class="fw-bold text-center mb-2"><span style="font-weight: normal !important;">Оберіть гравіювання із каталогу яке Вам подобається або запропонуйте своє.</span></h6><a class="btn mt-2 btn-primary" role="button" href="catalog.html">Переглянути каталог</a>
                         </div>
@@ -72,9 +77,14 @@
     </div>
     <div class="row" style="max-width: 1000px;margin: 0 auto;justify-content: center;align-items: center;">
         <div class="col">
-            <h5 style="padding-bottom: 1px;margin-bottom: 1px;margin-top: 8px;"><span style="text-decoration: line-through;">2400 грн</span></h5>
-            <h2 id="price-for-each" style="color: var(--bs-primary);font-weight: bold;margin-bottom: 2px;">2000 грн</h2>
-            <p style="margin-bottom: 11px;padding-top: 0px;margin-top: -5px;">ціна за пару</p>
+            {% if product.sale_price %}
+            	<h5 style="padding-bottom: 1px;margin-bottom: 1px;margin-top: 8px;"><span style="text-decoration: line-through;">{{ product.price }} грн.</span></h5>
+                <h2 id="price-for-each" style="color: var(--bs-primary);font-weight: bold;margin-bottom: 2px;">{{ product.sale_price }} грн.</h2>
+                <p style="margin-bottom: 11px;padding-top: 0px;margin-top: -5px;">ціна за пару</p>
+            {% else %}
+                <h2 id="price-for-each" style="color: var(--bs-primary);font-weight: bold;margin-bottom: 2px;">{{ product.price }} грн.</h2>
+                <p style="margin-bottom: 11px;padding-top: 0px;margin-top: -5px;">ціна за пару</p>
+            {% endif %}
         </div>
         <div class="col">
             <div class="row">
@@ -103,7 +113,7 @@
         </div>
     </section><!-- End: Banner Color -->
     <div id="custom-confirm" style="display: none;">
-        <div class="p-4 py-4 px-5 confirm-container" style="background-color: #fff;border-radius: 10px;position: relative;min-height: 90vh;overflow-y: auto;overflow-x: hidden;margin-top: 200px;margin-bottom: 100px;width: clamp(1200px, 100%, 300px);"><img id="modalFoto" style="position: absolute;max-width: 80%;max-height: 70%;z-index: 0;opacity: 0.70;" src="assets/img/noname.jpg">
+        <div class="p-4 py-4 px-5 confirm-container" style="background-color: #fff;border-radius: 10px;position: relative;min-height: 90vh;overflow-y: auto;overflow-x: hidden;margin-top: 200px;margin-bottom: 100px;width: clamp(1200px, 100%, 300px);"><img id="modalFoto" style="position: absolute;max-width: 80%;max-height: 70%;z-index: 0;opacity: 0.70;" src="{% static 'img/noname.jpg' %}">
             <h2 class="text-center mt-2 mb-5" style="z-index: 1;position: relative;"><strong>Підтвердіть замовлення</strong></h2>
             <div style="z-index: 1;position: relative;">
                 <div class="row">
@@ -170,16 +180,16 @@
         </div>
     </div><!-- Start: Footer Multi Column -->
     <footer>
-        <div class="container py-4 py-lg-5" style="position: relative;"><img src="assets/img/logo.jpg" style="max-width: 250px;z-index: -1;position: absolute;top: 10%;right: 7%;margin: 0 auto;opacity: 0.50;">
+        <div class="container py-4 py-lg-5" style="position: relative;"><img src="{% static 'img/logo.jpg' %}" style="max-width: 250px;z-index: -1;position: absolute;top: 10%;right: 7%;margin: 0 auto;opacity: 0.50;">
             <div class="row justify-content-center">
                 <!-- Start: Services -->
                 <div class="col-sm-4 col-md-3 text-center text-lg-start d-flex flex-column item">
                     <h3 class="fs-6">Навігація</h3>
                     <ul class="list-unstyled">
-                        <li><a class="link-secondary" href="index.html#main">Головна</a></li>
-                        <li><a class="link-secondary" href="index.html#catalog">Каталог</a></li>
-                        <li><a class="link-secondary" href="index.html#about-sadhu">Що таке садху?</a></li>
-                        <li><a class="link-secondary" href="index.html#about-us">Про нас</a></li>
+                        <li><a class="link-secondary" href="\#main">Головна</a></li>
+                        <li><a class="link-secondary" href="\#catalog">Каталог</a></li>
+                        <li><a class="link-secondary" href="\#about-sadhu">Що таке садху?</a></li>
+                        <li><a class="link-secondary" href="\#about-us">Про нас</a></li>
                     </ul>
                 </div><!-- End: Services -->
                 <!-- Start: Social Icons -->
@@ -201,11 +211,11 @@
         </div>
     </footer><!-- End: Footer Multi Column -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/bs-init.js"></script>
-    <script src="assets/js/confirmForm.js"></script>
-    <script src="assets/js/Lightbox-Gallery-No-Gutters-baguetteBox.min.js"></script>
-    <script src="assets/js/Lightbox-Gallery-No-Gutters-Lightbox-Gallery.js"></script>
-    <script src="assets/js/quantity.js"></script>
+    <script src="{% static 'js/bs-init.js' %}"></script>
+    <script src="{% static 'js/confirmForm.js' %}"></script>
+    <script src="{% static 'js/Lightbox-Gallery-No-Gutters-baguetteBox.min.js' %}"></script>
+    <script src="{% static 'js/Lightbox-Gallery-No-Gutters-Lightbox-Gallery.js' %}"></script>
+    <script src="{% static 'js/quantity.js' %}"></script>
 </body>
 
 </html>

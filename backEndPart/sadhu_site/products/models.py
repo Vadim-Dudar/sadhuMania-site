@@ -12,7 +12,7 @@ class Product(models.Model):
     materials = models.TextField(max_length=100, verbose_name="Матеріали")
     equipment = models.TextField(max_length=100, verbose_name="Комплектація")
     price = models.DecimalField(max_digits=11, decimal_places=0, verbose_name="Ціна")
-    sale_price = models.DecimalField(max_digits=11, decimal_places=1, blank=True, null=True, verbose_name="Акційна ціна")
+    sale_price = models.DecimalField(max_digits=11, decimal_places=0, blank=True, null=True, verbose_name="Акційна ціна")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
     def __str__(self):
@@ -25,3 +25,20 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Зображення для {self.product.name}"
+
+class Order(models.Model):
+    product = models.ForeignKey(Product, related_name='orders', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, verbose_name='Ім\'я')
+    surname = models.CharField(max_length=100, verbose_name='Прізвище')
+    phone = models.CharField(max_length=50, verbose_name='Номер телефону')
+    address = models.CharField(max_length=100, verbose_name='Населений пункт')
+    post = models.CharField(max_length=50, verbose_name='Відділення пошти')
+    engraving = models.CharField(max_length=50 ,verbose_name='Грвіювання')
+    quantity = models.DecimalField(max_digits=2, decimal_places=0, verbose_name="Кількість")
+    manager = models.BooleanField(default=True ,verbose_name="Необхідно зателефонувати")
+    comment = models.TextField(max_length=400, verbose_name="Коментар")
+    price = models.DecimalField(max_digits=11, decimal_places=0, verbose_name="Ціна заомвлення")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата замовлення")
+
+    def __str__(self):
+        return f"[{self.id}] {self.name} - {self.quantity} | {self.manager} | {self.price} грн."

@@ -1,5 +1,7 @@
+from fileinput import close
+
 from django.contrib import admin
-from .models import Product, ProductImage
+from .models import Product, ProductImage, Order
 
 
 # Вбудована модель для завантаження зображень у продукт
@@ -14,3 +16,10 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'materials')  # Пошук по полях
     list_filter = ('created_at',)  # Фільтр за датою створення
     inlines = [ProductImageInline]  # Додаємо inline-модель для зображень
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created_at', 'price', 'manager', 'phone', 'sent')
+    list_editable = ('manager', 'sent')
+    search_fields = ('name', 'phone')
+    list_filter = ('created_at', 'sent')

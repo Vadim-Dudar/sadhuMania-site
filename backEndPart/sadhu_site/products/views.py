@@ -7,6 +7,13 @@ from django.http import JsonResponse
 from content.models import FooterInfo
 
 # Create your views here.
+def get_ids():
+    engravings = Engraving.objects.all()
+    dict_ids = []
+    for engraving in engravings:
+        dict_ids.append(engraving.display_id)
+
+    return sorted(dict_ids)
 
 class ProductDetailView(DetailView):
     model = Product  # Django автоматично знайде об'єкт за `pk` з URL
@@ -16,6 +23,7 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['footer_info'] = FooterInfo.objects.first()
+        context['engraving_ids'] = get_ids()
 
         return context
 
@@ -66,7 +74,7 @@ def create_order(request):
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 def engraving_page(request):
-    engravings = Engraving.objects.all().order_by('-id')
+    engravings = Engraving.objects.all().order_by('id')
     footer_info = FooterInfo.objects.first()
 
     context = {

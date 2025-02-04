@@ -27,6 +27,5 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(Engraving)
 class EngravingAdmin(admin.ModelAdmin):
     list_display = ('display_id', 'name', 'upload_at')
-    list_editable = ('name',)
     search_fields = ('name',)
     list_filter = ('upload_at',)

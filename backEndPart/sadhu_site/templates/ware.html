@@ -145,12 +145,9 @@
                     <div class="col">
                         <select id="engraving-select">
                         <option value="1" selected>Без гравіювання</option>
-                        <option>№1</option>
-                        <option>№2</option>
-                        <option>№3</option>
-                        <option>№4</option>
-                        <option>№5</option>
-                        <option>№6</option>
+                        {% for engraving_id in engraving_ids %}
+                            <option>#{{ engraving_id }}</option>
+                        {% endfor %}
                         </select>
                     </div>
                     </div>

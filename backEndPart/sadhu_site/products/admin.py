@@ -1,7 +1,7 @@
 from fileinput import close
 
 from django.contrib import admin
-from .models import Product, ProductImage, Order
+from .models import Product, ProductImage, Order, Engraving
 
 
 # Вбудована модель для завантаження зображень у продукт
@@ -23,3 +23,10 @@ class OrderAdmin(admin.ModelAdmin):
     list_editable = ('manager', 'sent')
     search_fields = ('name', 'phone')
     list_filter = ('created_at', 'sent')
+
+@admin.register(Engraving)
+class EngravingAdmin(admin.ModelAdmin):
+    list_display = ('display_id', 'name', 'upload_at')
+    list_editable = ('name',)
+    search_fields = ('name',)
+    list_filter = ('upload_at',)

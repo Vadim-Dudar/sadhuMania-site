@@ -44,3 +44,32 @@ class Order(models.Model):
 
     def __str__(self):
         return f"[{self.id}] {self.name} - {self.quantity} | {self.manager} | {self.price} грн."
+
+def get_next_display_id():
+    # Знайти всі існуючі display_id
+    existing_ids = Engraving.objects.values_list('display_id', flat=True).order_by('display_id')
+
+    # Якщо немає записів, почнемо з 1
+    if not existing_ids:
+        return 1
+
+    # Знайти перший пропущений номер
+    max_id = max(existing_ids)
+    all_ids = set(range(1, max_id + 2))  # +2 для випадку, коли всі номери заповнені
+    free_ids = all_ids - set(existing_ids)
+
+    return min(free_ids) if free_ids else max_id + 1
+
+class Engraving(models.Model):
+    display_id = models.PositiveIntegerField(unique=True, default=0, verbose_name="ID")
+    name = models.CharField(max_length=255, unique=True, verbose_name="Назва")
+    image = models.ImageField(upload_to='graws/', verbose_name="Гравіювання")
+    upload_at = models.DateField(null=True ,editable=False ,verbose_name="Завантажено", auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.display_id:  # Тільки для нових записів
+            self.display_id = get_next_display_id()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"[{self.id}] {self.name} - {self.image}"

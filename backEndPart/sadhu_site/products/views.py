@@ -4,6 +4,7 @@ from .models import Product, Order
 from django.core.exceptions import ValidationError
 import json
 from django.http import JsonResponse
+from content.models import FooterInfo
 
 # Create your views here.
 
@@ -11,6 +12,12 @@ class ProductDetailView(DetailView):
     model = Product  # Django автоматично знайде об'єкт за `pk` з URL
     template_name = 'ware.html'  # шлях до шаблону
     context_object_name = 'product'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['footer_info'] = FooterInfo.objects.first()
+
+        return context
 
 def create_order(request):
     if request.method == 'POST':

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import DetailView
-from .models import Product, Order
+from .models import Product, Order, Engraving
 from django.core.exceptions import ValidationError
 import json
 from django.http import JsonResponse
@@ -64,3 +64,14 @@ def create_order(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+def engraving_page(request):
+    engravings = Engraving.objects.all().order_by('-id')
+    footer_info = FooterInfo.objects.first()
+
+    context = {
+        'engravings': engravings,
+        'footer_info': footer_info,
+    }
+
+    return render(request, 'catalog.html', context)

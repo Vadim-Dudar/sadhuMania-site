@@ -10,9 +10,11 @@ async def is_allowed_user(chat_id):
 
     # 1. Перевірити існування користувача в базі
     user_exists = await sync_to_async(BotUsers.objects.filter(user_id=chat_id).exists)()
-    user = await sync_to_async(BotUsers.objects.get)(user_id=chat_id)
+    if user_exists:
+        user = await sync_to_async(BotUsers.objects.get)(user_id=chat_id)
+        return user
 
-    return user_exists
+    return False
 
 
 

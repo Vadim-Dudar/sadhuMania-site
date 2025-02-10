@@ -1,3 +1,4 @@
+from django.db.models.fields import return_None
 from django.shortcuts import render
 from django.views.generic import DetailView
 from .models import Product, Order, Engraving
@@ -5,6 +6,9 @@ from django.core.exceptions import ValidationError
 import json
 from django.http import JsonResponse
 from content.models import FooterInfo
+from telegram_bot.bot_runner import send_order_notification
+from asgiref.sync import async_to_sync
+
 
 # Create your views here.
 def get_ids():
@@ -52,7 +56,10 @@ def create_order(request):
                 quantity=data['quantity'],
                 manager=data['manager'],
                 comment=data['comment'],
-                price=Product.objects.get(name=data['name_of_product']).price*int(data['quantity']),
+                price=
+                    Product.objects.get(name=data['name_of_product']).price*int(data['quantity']) + 200
+                    if data['engraving'] != '1'
+                    else Product.objects.get(name=data['name_of_product']).price * int(data['quantity']),
             )
 
             # Додаткова валідація (наприклад, чи email коректний)
@@ -60,6 +67,8 @@ def create_order(request):
 
             # Зберегти об'єкт у базі даних
             order.save()
+
+            async_to_sync(send_order_notification)(order)
 
             # Повернути успішну відповідь
             return JsonResponse({'status': 'success', 'message': 'Order created successfully!', 'order_id': order.id})

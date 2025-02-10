@@ -28,6 +28,23 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+#Django Telegram Bot settings
+
+DJANGO_TELEGRAMBOT = {
+
+    'MODE' : 'WEBHOOK',
+    'WEBHOOK_SITE' : 'http://localhost:8080/',
+    'WEBHOOK_PREFIX' : '/bot',
+    'STRICT_INIT': True,
+    'BOT_MODULE_NAME': 'telegrambot_handlers',
+
+    'BOTS' : [
+        {
+           'TOKEN': '7288126174:AAEM-5QHxCuf2-JDfIbyc0zBMgs045rTSco', #Your bot token.
+        },
+    ],
+
+}
 
 # Application definition
 
@@ -40,6 +57,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'content',
     'products',
+    'admin_panel',
+    'telegram_bot',
 ]
 
 MIDDLEWARE = [

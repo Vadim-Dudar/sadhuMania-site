@@ -27,6 +27,7 @@ urlpatterns = [
     path('create-order/', create_order, name='create_order'),
     path('catalog-of-engravings', engraving_page, name='engraving_page'),
     path('admin/', admin.site.urls),
+    path('bot/', include('django_telegrambot.urls')),
 ]
 
 if settings.DEBUG:

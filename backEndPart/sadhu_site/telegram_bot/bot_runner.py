@@ -1,13 +1,31 @@
-from telegram.ext import Application, CommandHandler  # Ensure 'python-telegram-bot' version is at least 20.0
-from .views import start  # Імпорт команди /start з views.py
+# telegram_bot/bot_runner.py
+
+import asyncio
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from .views import start, handle_message
+
+
+async def run_async_bot(token):
+    """Асинхронний запуск Telegram-бота"""
+    # Ініціалізація програми
+    app = ApplicationBuilder().token(token).build()
+
+    # Реєстрація обробників
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    # Виконуємо polling
+    await app.run_polling()
 
 
 def run_bot(token):
-    # Налаштування бота
-    application = Application.builder().token(token).build()
+    """Синхронний запуск Telegram-бота (з урахуванням подій)"""
+    try:
+        # Отримуємо вже існуючу подію (або створюємо нову, якщо її немає)
+        loop = asyncio.get_running_loop()
+    except RuntimeError:  # Немає активного циклу
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-    # Додавання команди /start
-    application.add_handler(CommandHandler("start", start))
-
-    # Старт бота
-    application.run_polling()
+    # Запускаємо асинхронну функцію у вже існуючому циклі
+    loop.create_task(run_async_bot(token))

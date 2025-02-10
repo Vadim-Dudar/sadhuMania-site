@@ -1,16 +1,15 @@
-from django.shortcuts import render
+# telegram_bot/views.py
 
-# Create your views here.
 from telegram import Update
 from telegram.ext import ContextTypes
 
 
-# Команда /start
+# Обробляємо команду /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обробка команди /start. Привітання користувача."""
-    await update.message.reply_text(
-        "Привіт! Я Telegram-бот для вашого сайту. Я допоможу вам керувати замовленнями.\n"
-        "Спробуйте ввести команду, або надішліть мені повідомлення!"
-    )
+    await update.message.reply_text("Привіт! Я ваш Telegram-бот. Як я можу допомогти?")
 
-# Інші обробники ви можете додавати за такою ж структурою
+
+# Обробляємо текстові повідомлення
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text  # Текстове повідомлення від користувача
+    await update.message.reply_text(f"Ви сказали: {user_text}")

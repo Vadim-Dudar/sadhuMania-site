@@ -3,7 +3,6 @@
 from django.apps import AppConfig
 from .secure import TELEGRAM_BOT_TOKEN
 from .bot_runner import run_bot
-import threading
 
 
 class TelegramBotConfig(AppConfig):
@@ -12,6 +11,4 @@ class TelegramBotConfig(AppConfig):
 
     def ready(self):
         """Фоновий запуск Telegram-бота разом із Django"""
-        bot_thread = threading.Thread(target=run_bot, args=(TELEGRAM_BOT_TOKEN,))
-        bot_thread.daemon = True
-        bot_thread.start()
+        run_bot(TELEGRAM_BOT_TOKEN)

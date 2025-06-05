@@ -1,7 +1,7 @@
 from fileinput import close
 
 from django.contrib import admin
-from .models import Product, ProductImage, Order, Engraving
+from .models import Product, ProductImage, Order, Engraving, Customer
 
 
 # Вбудована модель для завантаження зображень у продукт
@@ -19,13 +19,50 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at', 'price', 'manager', 'phone', 'sent')
-    list_editable = ('manager', 'sent')
-    search_fields = ('name', 'phone')
-    list_filter = ('created_at', 'sent')
+    # list_display — колонки, що будуть показані в адмінці
+    list_display = (
+        'get_product_name',   # Назва товару
+        'get_customer_phone', # Телефон клієнта
+        'get_manager_name',   # Менеджер
+        'created_at',         # Дата замовлення
+        'price',              # Ціна
+        'status',             # Статус
+    )
+
+    # Поля, які можна редагувати прямо зі списку
+    list_editable = ('status',)
+
+    # Поля для пошуку
+    search_fields = (
+        'product_id__name',
+        'customer_id__phone',
+    )
+
+    # Фільтри праворуч
+    list_filter = ('created_at', 'status')
+
+    # Метод: Назва товару
+    def get_product_name(self, obj):
+        return obj.product_id.name if obj.product_id else "—"
+    get_product_name.short_description = 'Товар'
+
+    # Метод: Телефон клієнта
+    def get_customer_phone(self, obj):
+        return obj.customer_id.phone if obj.customer_id else "—"
+    get_customer_phone.short_description = 'Телефон'
+
+    # Метод: Менеджер
+    def get_manager_name(self, obj):
+        return obj.manager_id.name if obj.manager_id else "—"
+    get_manager_name.short_description = 'Менеджер'
 
 @admin.register(Engraving)
 class EngravingAdmin(admin.ModelAdmin):
     list_display = ('display_id', 'name', 'upload_at')
     search_fields = ('name',)
     list_filter = ('upload_at',)
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone')
+    search_fields = ('phone',)

@@ -1,0 +1,35 @@
+.col {
+  background-color: #fff;
+  margin: 5px;
+  width: 32%;
+  min-width: 300px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+#custom-confirm .col {
+  background: none;
+}
+
+.counter-btn-sec {
+  width: 35px;
+  height: 25px;
+}
+
+.confirm-container .col {
+  min-width: 300px;
+}
+
+.col input, textarea {
+  min-width: 80%;
+}
+
+.kpi-card {
+  padding: 20px;
+  border-radius: 20px;
+  margin: 5px;
+  width: 100%;
+  flex: 1 1 calc(50% - 20px);
+  text-align: center;
+}
+

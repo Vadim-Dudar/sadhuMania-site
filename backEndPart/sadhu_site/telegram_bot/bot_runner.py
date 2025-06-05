@@ -1,6 +1,6 @@
 import asyncio
 import threading
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from telegram.error import Conflict
 from .views import *
 from telegram import Bot
@@ -11,26 +11,31 @@ async def send_order_notification(order):
     Асинхронна функція для надсилання сповіщення адміністраторам про нове замовлення.
     """
     from .secure import TELEGRAM_BOT_TOKEN
-    from admin_panel.models import BotUsers# Імпорт токена
+    from admin_panel.models import SystemUser as User
+    from django.db.models import Q
 
-    # Адміністратори, які отримують повідомлення
-    ADMIN_CHAT_IDS = await sync_to_async(list)(BotUsers.objects.values_list('user_id', flat=True))
+    ADMIN_CHAT_IDS = await sync_to_async(list)(
+        User.objects.filter(
+            Q(access_level='admin') | Q(access_level='super')
+        ).values_list('user_id', flat=True)
+    )
 
     bot = Bot(token=TELEGRAM_BOT_TOKEN)  # Ініціалізація Telegram бота
     message = (
-        f"🆕 НОВЕ ЗАМОВЛЕННЯ #{order.id} '{order.product}'\n\n"
-        f"Ім'я: {order.name} {order.surname}\n"
-        f"Телефон: {order.phone}\n"
-        f"Віділення: {order.address} {order.post}\n"
-        f"Сума: {order.price} грн\n"
-        f"Телефон: {order.phone}\n"
-        f"{'⭕ Менеджеру треба набрати!' if order.manager else ''}\n"
+        f"<b>🛒 ЗАМОВЛЕННЯ #{order.id} — {order.product_id.name}</b>\n\n"
+        f"<b>👤 Клієнт:</b>\n"
+        f"Ім'я: <i>{order.customer_id.name} {order.customer_id.surname}</i>\n"
+        f"Телефон: <i>{order.customer_id.phone}</i>\n\n"
+        f"<b>🚚 Доставка:</b> <i>{order.address} #{order.post}</i>\n"
+        f"<b>💰 Сума:</b> <i>{order.price} грн</i>\n"
+        f"{'🔔 <b>Потрібно зателефонувати клієнту!</b>' if order.status == 'should_call' else ''}\n"
+        f"<b>🕒 Час:</b> {order.created_at.strftime('%d.%m.%Y %H:%M')}"
     )
 
     # Надсилаємо повідомлення всім адміністраторам
     for admin_id in ADMIN_CHAT_IDS:
         try:
-            await bot.send_message(chat_id=admin_id, text=message)
+            await bot.send_message(chat_id=admin_id, text=message, parse_mode='HTML')
         except Exception as e:
             print(f"Помилка під час надсилання повідомлення адміністратору {admin_id}: {e}")
 
@@ -55,6 +60,8 @@ def run_bot(token):
         # Додайте ваші командні обробники
         app.add_handler(CommandHandler("start", start))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        app.add_handler(CommandHandler("manager", manager))
+        app.add_handler(CommandHandler("tosend", to_send))
 
         # Зареєструйте обробник помилок
         app.add_error_handler(error_handler)

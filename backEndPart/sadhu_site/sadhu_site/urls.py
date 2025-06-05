@@ -20,13 +20,15 @@ from django.contrib import admin
 from django.urls import path, include
 
 from products.views import ProductDetailView, create_order, engraving_page
+from admin_panel.views import login_page
 
 urlpatterns = [
     path('', include('content.urls')),
     path('product/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
     path('create-order/', create_order, name='create_order'),
     path('catalog-of-engravings', engraving_page, name='engraving_page'),
-    path('admin/', admin.site.urls),
+    path('admin/crm', login_page, name='login_page'),
+    path('admin/django-admin', admin.site.urls),
 ]
 
 if settings.DEBUG:

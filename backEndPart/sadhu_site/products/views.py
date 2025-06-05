@@ -1,7 +1,7 @@
 from django.db.models.fields import return_None
 from django.shortcuts import render
 from django.views.generic import DetailView
-from .models import Product, Order, Engraving
+from .models import Product, Order, Engraving, Customer, Users
 from django.core.exceptions import ValidationError
 import json
 from django.http import JsonResponse
@@ -37,6 +37,7 @@ def create_order(request):
             # Отримати JSON з тіла запиту
             data = request.body.decode('utf-8')
             data = json.loads(data)
+            print(data)
 
             # Валідація даних
             required_fields = ['name_of_product', 'name', 'surname', 'phone', 'address', 'post', 'engraving', 'quantity', 'manager', 'comment']
@@ -45,21 +46,29 @@ def create_order(request):
                     return JsonResponse({'status': 'error', 'message': f'Missing field: {field}'}, status=400)
 
             # Створити об'єкт Order
-            order = Order(
-                product=data['name_of_product'],
+            product = Product.objects.get(name=data['name_of_product'])
+            if data['engraving'] != '1':
+                engraving = Engraving.objects.get(display_id=data['engraving'][1:])
+            else:
+                engraving = None
+
+            customer, _ = Customer.objects.get_or_create(
                 name=data['name'],
                 surname=data['surname'],
-                phone=data['phone'],
+                phone=data['phone']
+            )
+
+            order = Order(
+                product_id=product,
+                customer_id=customer,
+                manager_id=Users.objects.get(name='Вадім Дудар'),
                 address=data['address'],
                 post=data['post'],
-                engraving=data['engraving'],
+                engraving=engraving,
                 quantity=data['quantity'],
-                manager=data['manager'],
                 comment=data['comment'],
-                price=
-                    Product.objects.get(name=data['name_of_product']).price*int(data['quantity']) + 200
-                    if data['engraving'] != '1'
-                    else Product.objects.get(name=data['name_of_product']).price * int(data['quantity']),
+                status='should_call' if data['manager'] else 'production',
+                price=product.price * int(data['quantity']) + (200 if data['engraving'] != '1' else 0)
             )
 
             # Додаткова валідація (наприклад, чи email коректний)

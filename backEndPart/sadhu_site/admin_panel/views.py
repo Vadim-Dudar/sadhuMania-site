@@ -8,11 +8,12 @@ from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password
 from .models import SystemUser, Expense, MonthlyStats
-from products.models import Order
+from products.models import Order, Available
 from django.db.models import Count
 from content.models import CarouselImage, FooterInfo
 from django.http import JsonResponse
 from .forms import CarouselImageForm
+from django.views.decorators.csrf import csrf_exempt
 
 def login_page(request):
     if request.method == 'POST':
@@ -159,17 +160,23 @@ def edit_site(request):
         return render(request, 'crm/login.html')
 
     user = SystemUser.objects.get(id=user_id)
-    return render(request, 'crm/editSite.html', context={'user': user, 'cards': CarouselImage.objects.all()})
+    footer = FooterInfo.objects.first()
+    return render(request, 'crm/editSite.html', {
+        'user': user,
+        'cards': CarouselImage.objects.all(),
+        'footer': footer
+    })
 
 def add_carousel_slide_ajax(request):
     if request.method == 'POST':
         form = CarouselImageForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return JsonResponse({'success': True})
+            slide = form.save()
+            return JsonResponse({'success': True, 'new_id': slide.id})
         else:
             return JsonResponse({'success': False, 'error': form.errors.as_json()}, status=400)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
 
 def delete_carousel(request):
     if request.method == 'POST':
@@ -181,3 +188,112 @@ def delete_carousel(request):
         except CarouselImage.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Slide not found'}, status=404)
     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def edit_carousel(request):
+    if request.method == 'POST':
+        slide_id = request.POST.get('id')
+        try:
+            slide = CarouselImage.objects.get(id=slide_id)
+            slide.title = request.POST.get('title')
+            slide.button = request.POST.get('button')
+            slide.slide_type = request.POST.get('slide_type')
+            slide.order = int(request.POST.get('order'))
+
+            if 'image' in request.FILES:
+                slide.image = request.FILES['image']
+
+            slide.save()
+            return JsonResponse({'success': True})
+        except CarouselImage.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def edit_footer(request):
+    if request.method == 'POST':
+        try:
+            footer = FooterInfo.objects.first()
+            if not footer:
+                return JsonResponse({'success': False, 'error': 'FooterInfo not found'}, status=404)
+
+            footer.instagram = request.POST.get('instagram')
+            footer.phone = request.POST.get('phone')
+            footer.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+def avalybility(request):
+    user_id = request.session.get('system_user_id')
+    if not user_id:
+        return render(request, 'crm/login.html')
+
+    user = SystemUser.objects.get(id=user_id)
+    footer = FooterInfo.objects.first()
+
+    # !!! додай передачу списку продуктів (для <datalist>)
+    from products.models import Product
+
+    return render(request, 'crm/availybility.html', {
+        'user': user,
+        'availybilyty': Available.objects.all(),
+        'products': Product.objects.all(),
+        'footer': footer
+    })
+
+@csrf_exempt
+def add_availability_ajax(request):
+    if request.method == 'POST':
+        product_name = request.POST.get('product')
+        count = request.POST.get('count')
+        comment = request.POST.get('comment')
+
+        try:
+            from products.models import Product
+            product = Product.objects.get(name=product_name)
+            avail = Available.objects.create(product=product, count=count, comment=comment)
+            return JsonResponse({
+                'success': True,
+                'new_id': avail.id,
+                'product_name': product.name,
+                'count': avail.count,
+                'comment': avail.comment
+            })
+        except Product.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Product not found'}, status=404)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def edit_availability_ajax(request):
+    if request.method == 'POST':
+        avail_id = request.POST.get('id')
+        try:
+            avail = Available.objects.get(id=avail_id)
+            from products.models import Product
+            product = Product.objects.get(name=request.POST.get('product'))
+            avail.product = product
+            avail.count = request.POST.get('count')
+            avail.comment = request.POST.get('comment')
+            avail.save()
+            return JsonResponse({'success': True})
+        except (Available.DoesNotExist, Product.DoesNotExist):
+            return JsonResponse({'success': False, 'error': 'Item or product not found'}, status=404)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def delete_availability_ajax(request):
+    if request.method == 'POST':
+        availability_id = request.POST.get('id')
+        try:
+            avail = Available.objects.get(id=availability_id)
+            avail.delete()
+            return JsonResponse({'success': True})
+        except Available.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+

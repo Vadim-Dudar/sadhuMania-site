@@ -1,7 +1,7 @@
 from fileinput import close
 
 from django.contrib import admin
-from .models import Product, ProductImage, Order, Engraving, Customer
+from .models import Product, ProductImage, Order, Engraving, Customer, Available
 
 
 # Вбудована модель для завантаження зображень у продукт
@@ -66,3 +66,8 @@ class EngravingAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('name', 'phone')
     search_fields = ('phone',)
+
+@admin.register(Available)
+class AvailableAdmin(admin.ModelAdmin):
+    list_display = ('product', 'comment', 'count')
+    search_fields = ('product',)

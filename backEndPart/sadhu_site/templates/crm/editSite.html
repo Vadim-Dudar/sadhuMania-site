@@ -28,23 +28,41 @@
                 </thead>
                 <tbody>
                     {% for card in cards %}
-                    	<tr data-id="{{ card.id }}" onclick="openModalEditCarousel()">
-                            <td>{{ card.order }}</td>
+                    	<tr>
+                            <td data-id="{{ card.id }}"
+                            data-button="{{ card.button|escapejs }}"
+                            data-title="{{ card.title|escapejs }}"
+                            data-order="{{ card.order }}"
+                            data-slide_type="{{ card.slide_type }}"
+                            onclick="openModal('addCarousel', context={ action: 'editCarousel', id: {{ card.id }} })">{{ card.order }}</td>
                             <td><img class="engraving_img" src="{{ card.image.url }}"></td>
                             <td>{{ card.button }}</td>
                             <td>{{ card.title }}</td>
-                            <td>
+                            {% if user.access_level == 'admin' %}
+                                <td>
                                 <button class="btn btn-primary" type="button"
                                         onclick="openModal('deleteItem', context={action: 'deleteEng', id: {{ card.id }}})"
                                         style="color: var(--bs-light); background: var(--bs-danger); border-style: none;">
                                     <i class="icon ion-android-delete"></i>
                                 </button>
                             </td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </div><button class="btn btn-primary" type="button" style="margin-left: 50px;" onclick="openModal(&#39;editSite&#39;, context={action: &#39;editSite&#39;})">Редагувати вміст сайту</button>
+        </div>
+        {% if user.access_level == 'admin' %}
+        <button class="btn btn-primary"
+        type="button"
+        style="margin-left: 50px;"
+        data-instagram="{{ footer.instagram|default:'' }}"
+        data-phone="{{ footer.phone|default:'' }}"
+        onclick="openModal('editSite', context={action: 'editSite'})">
+            Редагувати вміст сайту
+        </button>
+        {% endif %}
+
     </div>
     <div id="deleteItem" class="modal" style="display: none;">
         <div class="p-4 py-4 px-5 confirm-container" style="background-color: #fff;border-radius: 10px;position: relative;min-height: 0vh;overflow-y: auto;overflow-x: hidden;margin-top: 300px;margin-bottom: 300px;width: clamp(1200px, 100%, 300px);">
@@ -59,7 +77,9 @@
     </div>
     <div id="addCarousel" class="modal" style="display: none;">
         <div class="p-4 py-4 px-5 confirm-container" style="background-color: #fff;border-radius: 10px;position: relative;/*min-height: 50vh;*/overflow-y: auto;overflow-x: hidden;margin-top: 250px;margin-bottom: 250px;width: clamp(1200px, 100%, 300px);">
-            <h2 class="text-center mt-2 mb-5" style="z-index:1;position:relative;"><strong>Додати слайд каруселі</strong></h2>
+           <h2 id="carousel-modal-title" class="text-center mt-2 mb-5" style="z-index:1;position:relative;">
+                <strong>Додати слайд каруселі</strong>
+            </h2>
             <div style="z-index:1;position:relative;">
                 <div class="row">
                     <div class="col"><span>Текст кнопки</span></div>
@@ -87,11 +107,12 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col"><button class="btn btn-secondary" id="close" type="button" onclick="closeModal()">Скасувати</button></div>
-                    <div class="col"><button class="btn btn-primary" id="send" type="button" onclick="sendAddModal()">Підтвердити</button></div>
+                    <div class="col"><button class="btn btn-primary" id="send" type="button" onclick="saveCarouselModal()">Підтвердити</button></div>
                 </div>
             </div>
         </div>
     </div>
+    {% if user.access_level == 'admin' %}
     <div id="editSite" class="modal" style="display: none;">
         <div class="p-4 py-4 px-5 confirm-container" style="background-color: #fff;border-radius: 10px;position: relative;/*min-height: 50vh;*/overflow-y: auto;overflow-x: hidden;margin-top: 250px;margin-bottom: 250px;width: clamp(1200px, 100%, 300px);">
             <h2 class="text-center mt-2 mb-5" style="z-index:1;position:relative;"><strong>&nbsp;Редагувати вміст сайту</strong></h2>
@@ -106,73 +127,220 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col"><button class="btn btn-secondary" id="close-2" type="button" onclick="closeModal()">Скасувати</button></div>
-                    <div class="col"><button class="btn btn-primary" id="send-2" type="button" onclick="sendModal()">Підтвердити</button></div>
+                    <div class="col"><button class="btn btn-primary" id="send-2" type="button" onclick="saveFooterModal()">Підтвердити</button></div>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'crm/js/Modal-confirmForm.js' %}"></script>
 
 <script>
-function sendAddModal() {
+function saveCarouselModal() {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     const formData = new FormData();
 
-    // Отримуємо значення з інпутів
     const buttonText = document.getElementById('name-input').value;
     const slideText = document.getElementById('name-input-1').value;
     const imageInput = document.querySelector('input[type="file"]');
     const leadsTo = document.querySelectorAll('select')[0].value;
     const order = document.getElementById('name-input-10').value;
 
-    // Додаємо в FormData
     formData.append('button', buttonText);
     formData.append('title', slideText);
-    formData.append('image', imageInput.files[0]);
     formData.append('slide_type', leadsTo);
     formData.append('order', order);
-    if (csrfToken) {
-        formData.append('csrfmiddlewaretoken', csrfToken);
+    if (imageInput.files.length > 0) {
+        formData.append('image', imageInput.files[0]);
+    }
+    if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
+
+    let url = '/add-slide-ajax/';
+    let isEdit = false;
+
+    if (modalContext && modalContext.action === 'editCarousel') {
+        url = '/edit-carousel/';
+        formData.append('id', modalContext.id);
+        isEdit = true;
     }
 
-    fetch('/add-slide-ajax/', {
+    fetch(url, {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Додаємо новий рядок у таблицю
-            const tableBody = document.querySelector('tbody');
-            const newRow = document.createElement('tr');
+            const row = document.querySelector(`tr[data-id="${modalContext?.id}"]`);
+            if (isEdit && row) {
+                row.dataset.button = buttonText;
+                row.dataset.title = slideText;
+                row.dataset.order = order;
+                row.dataset.slide_type = leadsTo;
 
-            newRow.innerHTML = `
-                <td>${order}</td>
-                <td><img class="engraving_img" src="${URL.createObjectURL(imageInput.files[0])}" style="max-height=150px"></td>
-                <td>${buttonText}</td>
-                <td>${slideText}</td>
-                <td><button class="btn btn-primary" type="button" style="color: var(--bs-light);background: var(--bs-danger);border-style: none;" onclick="openModal('deleteItem', context={action: 'deleteEng', id: 0})"><i class="icon ion-android-delete"></i></button></td>
-            `;
+                row.children[0].textContent = order;
+                if (imageInput.files.length > 0) {
+                    row.children[1].querySelector('img').src = URL.createObjectURL(imageInput.files[0]);
+                }
+                row.children[2].textContent = buttonText;
+                row.children[3].textContent = slideText;
+            } else {
+                    const tableBody = document.querySelector('tbody');
+                    const newRow = document.createElement('tr');
+                    const imgURL = imageInput.files.length > 0 ? URL.createObjectURL(imageInput.files[0]) : '';
 
-            tableBody.appendChild(newRow);
+                    newRow.setAttribute('data-id', data.new_id); // Django має повертати id нового об'єкта
+                    newRow.setAttribute('data-button', buttonText);
+                    newRow.setAttribute('data-title', slideText);
+                    newRow.setAttribute('data-order', order);
+                    newRow.setAttribute('data-slide_type', leadsTo);
 
-            closeModal(); // Закриває модальне вікнj
+                    newRow.innerHTML = `
+                        <td>${order}</td>
+                        <td><img class="engraving_img" src="${imgURL}" style="max-height:150px;"></td>
+                        <td>${buttonText}</td>
+                        <td>${slideText}</td>
+                        {% if user.access_level == 'admin' %}
+                        <td>
+                            <button class="btn btn-primary" type="button"
+                                onclick="openModal('deleteItem', context={action: 'deleteEng', id: ${data.new_id} })"
+                                style="color: var(--bs-light); background: var(--bs-danger); border-style: none;">
+                                <i class="icon ion-android-delete"></i>
+                            </button>
+                        </td>
+                        {% endif %}
+                    `;
+                    tableBody.appendChild(newRow);
+            }
 
-            // Очищення полів
-            document.getElementById('name-input').value = '';
-            document.getElementById('name-input-1').value = '';
-            document.getElementById('name-input-10').value = '';
-            imageInput.value = '';
+            closeModal();
         } else {
             alert('Помилка: ' + JSON.stringify(data.error));
         }
     })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        alert('Помилка при з’єднанні з сервером');
+    .catch(err => {
+        console.error('Помилка:', err);
+        alert('З’єднання з сервером не вдалося');
     });
 }
+function saveFooterModal() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const instagram = document.getElementById('name-input-2').value;
+    const phone = document.getElementById('name-input-3').value;
+
+    const formData = new FormData();
+    formData.append('instagram', instagram);
+    formData.append('phone', phone);
+    if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
+
+    fetch('/edit-footer/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeModal();
+            alert('Дані збережено');
+        } else {
+            alert('Помилка: ' + JSON.stringify(data.error));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Сталася помилка при надсиланні');
+    });
+}
+
+function openModal(modalId, context = {}) {
+    modalContext = context;
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    modal.style.display = 'block';
+
+    if (modalId === 'addCarousel') {
+        // Назва модального вікна
+        const modalTitle = document.getElementById('carousel-modal-title');
+        if (context.action === 'editCarousel') {
+            modalTitle.innerHTML = '<strong>Редагувати слайд каруселі</strong>';
+
+            // Знайдемо відповідний рядок
+            const row = document.querySelector(`tr[data-id="${context.id}"]`);
+            if (row) {
+                // Вставляємо значення у форму
+                document.getElementById('name-input').value = row.dataset.button || '';
+                document.getElementById('name-input-1').value = row.dataset.title || '';
+                document.getElementById('name-input-10').value = row.dataset.order || '';
+                document.querySelector('select').value = row.dataset.slide_type || '#catalog';
+            }
+        } else {
+            modalTitle.innerHTML = '<strong>Додати слайд каруселі</strong>';
+
+            // Очищаємо форму
+            document.getElementById('name-input').value = '';
+            document.getElementById('name-input-1').value = '';
+            document.getElementById('name-input-10').value = '';
+            document.querySelector('select').value = '#catalog';
+            document.querySelector('input[type="file"]').value = '';
+        }
+    }
+    if (modalId === 'editSite') {
+        // Отримаємо кнопку, що викликала
+        const btn = document.querySelector(`button[onclick*="editSite"]`);
+        const insta = btn.getAttribute('data-instagram') || '';
+        const phone = btn.getAttribute('data-phone') || '';
+
+        document.getElementById('name-input-2').value = insta;
+        document.getElementById('name-input-3').value = phone;
+    }
+}
+
+function sendModal() {
+    if (!modalContext || !modalContext.action || !modalContext.id) {
+        alert("Помилка: немає контексту для дії");
+        return;
+    }
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const formData = new FormData();
+    formData.append('id', modalContext.id);
+    if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
+
+    let url = null;
+
+    // Визначення шляху
+    switch (modalContext.action) {
+        case 'deleteEng':
+            url = '/delete-carousel/';
+            break;
+
+        // (інше можеш додати сюди)
+        default:
+            alert('Невідома дія: ' + modalContext.action);
+            return;
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Помилка: ' + JSON.stringify(data.error));
+        }
+    })
+    .catch(err => {
+        console.error('Fetch error:', err);
+        alert('Помилка звʼязку з сервером');
+    });
+}
+
+
 </script>
 
 

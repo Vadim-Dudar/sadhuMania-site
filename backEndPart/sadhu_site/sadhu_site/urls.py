@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from products.views import ProductDetailView, create_order, engraving_page
-from admin_panel.views import login_page, logout_view, edit_site, add_carousel_slide_ajax, delete_carousel
+from admin_panel.views import login_page, logout_view, edit_site, add_carousel_slide_ajax, delete_carousel, edit_carousel, edit_footer, avalybility, add_availability_ajax, edit_availability_ajax, delete_availability_ajax
 
 urlpatterns = [
     path('', include('content.urls')),
@@ -31,6 +31,12 @@ urlpatterns = [
     path('admin/crm/edit-site', edit_site, name='edit_site'),
     path('add-slide-ajax/', add_carousel_slide_ajax, name='add_carousel_slide_ajax'),
     path('delete-carousel/', delete_carousel, name='delete_carousel'),
+    path('edit-carousel/', edit_carousel, name='edit_carousel'),
+    path('edit-footer/', edit_footer, name='edit_footer'),
+    path('admin/crm/availybility', avalybility, name='avalybility'),
+    path('add-availability/', add_availability_ajax, name='add_availability'),
+    path('edit-availability/', edit_availability_ajax, name='edit_availability'),
+    path('delete-availability/', delete_availability_ajax, name='delete_availability'),
     path('logout', logout_view, name='logout'),
     path('admin/django-admin', admin.site.urls),
 ]

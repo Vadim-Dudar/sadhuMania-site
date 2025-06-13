@@ -4,7 +4,7 @@ from django.contrib.auth.hashers import make_password, check_password
 # Create your models here.
 class SystemUser(models.Model):
     SLIDE_TYPE_CHOICES = [
-        ('super', 'Супер'),
+        ('manager', 'Менеджер'),
         ('admin', 'Адміністратор'),
         ('worker', 'Оператор виготовлення'),
     ]

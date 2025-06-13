@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from products.views import ProductDetailView, create_order, engraving_page
-from admin_panel.views import login_page
+from admin_panel.views import login_page, logout_view, edit_site, add_carousel_slide_ajax, delete_carousel
 
 urlpatterns = [
     path('', include('content.urls')),
@@ -28,6 +28,10 @@ urlpatterns = [
     path('create-order/', create_order, name='create_order'),
     path('catalog-of-engravings', engraving_page, name='engraving_page'),
     path('admin/crm', login_page, name='login_page'),
+    path('admin/crm/edit-site', edit_site, name='edit_site'),
+    path('add-slide-ajax/', add_carousel_slide_ajax, name='add_carousel_slide_ajax'),
+    path('delete-carousel/', delete_carousel, name='delete_carousel'),
+    path('logout', logout_view, name='logout'),
     path('admin/django-admin', admin.site.urls),
 ]
 

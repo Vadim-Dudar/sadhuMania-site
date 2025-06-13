@@ -5,10 +5,14 @@ import matplotlib.pyplot as plt
 from django.utils import timezone
 from django.db.models import Sum
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password
 from .models import SystemUser, Expense, MonthlyStats
 from products.models import Order
+from django.db.models import Count
+from content.models import CarouselImage, FooterInfo
+from django.http import JsonResponse
+from .forms import CarouselImageForm
 
 def login_page(request):
     if request.method == 'POST':
@@ -111,6 +115,28 @@ def render_dashboard(request):
 
     orders_today = Order.objects.filter(deadline=now.date())
     # ================================================
+
+    # Цікавлять тільки замовлення зі статусами "в роботі"
+    working_statuses = ['should_call', 'production', 'wait', 'sent']
+    orders = Order.objects.filter(status__in=working_statuses)
+
+    # Групуємо по статусу
+    status_counts = orders.values('status').annotate(count=Count('id'))
+
+    # Перетворюємо в словник
+    status_dict = {item['status']: item['count'] for item in status_counts}
+
+    # Загальна кількість замовлень у роботі
+    total = sum(status_dict.values()) or 1  # захист від ділення на 0
+
+    # Розрахунок відсотків
+    percentage_dict = {
+        'should_call': round(status_dict.get('should_call', 0) / total * 100, 2),
+        'production': round(status_dict.get('production', 0) / total * 100, 2),
+        'wait': round(status_dict.get('wait', 0) / total * 100, 2),
+        'sent': round(status_dict.get('sent', 0) / total * 100, 2),
+    }
+
     return render(request, 'crm/dashboard.html', {
         'user': user,
         'revenue': revenue,
@@ -120,4 +146,38 @@ def render_dashboard(request):
         'cpl': cpl,
         'asoop': asoop,
         'today': orders_today,
+        'percentage': percentage_dict,
     })
+
+def logout_view(request):
+    request.session.flush()
+    return redirect('login_page')
+
+def edit_site(request):
+    user_id = request.session.get('system_user_id')
+    if not user_id:
+        return render(request, 'crm/login.html')
+
+    user = SystemUser.objects.get(id=user_id)
+    return render(request, 'crm/editSite.html', context={'user': user, 'cards': CarouselImage.objects.all()})
+
+def add_carousel_slide_ajax(request):
+    if request.method == 'POST':
+        form = CarouselImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': form.errors.as_json()}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+def delete_carousel(request):
+    if request.method == 'POST':
+        slide_id = request.POST.get('id')
+        try:
+            slide = CarouselImage.objects.get(id=slide_id)
+            slide.delete()
+            return JsonResponse({'success': True})
+        except CarouselImage.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Slide not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)

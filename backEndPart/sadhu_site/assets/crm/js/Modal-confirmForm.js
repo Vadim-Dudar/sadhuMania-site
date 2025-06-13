@@ -39,9 +39,6 @@ function closeModal(){
     document.body.classList.remove('body-frozen');
 }
 
-function sendModal(){
-    return
-}
 
 let modalContext = null;
 
@@ -54,4 +51,51 @@ function openModal(modalId, context = {}){
         document.getElementById("offcanvas-menu").style.display = "none";
         document.body.classList.add('body-frozen');
     }
+}
+
+function sendModal() {
+    if (!modalContext || !modalContext.action || !modalContext.id) {
+        alert("Помилка: немає контексту для дії");
+        return;
+    }
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const formData = new FormData();
+    formData.append('id', modalContext.id);
+    if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
+
+    let url = null;
+
+    // Визначення шляху
+    switch (modalContext.action) {
+        case 'deleteEng':
+            url = '/delete-carousel/';
+            break;
+
+        // (інше можеш додати сюди)
+        default:
+            alert('Невідома дія: ' + modalContext.action);
+            return;
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // 🔻 Знаходимо <tr> і видаляємо зі сторінки
+            const tr = document.querySelector(`tr[data-id="${modalContext.id}"]`);
+            if (tr) tr.remove();
+
+            closeModal();
+        } else {
+            alert('Помилка: ' + JSON.stringify(data.error));
+        }
+    })
+    .catch(err => {
+        console.error('Fetch error:', err);
+        alert('Помилка звʼязку з сервером');
+    });
 }
